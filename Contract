@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 interface IOptimismContract {
-    function mintNFT(address recipient) external returns (uint256);
+    function sendUniversalPacket(bytes calldata packet) external;
 }
 
 contract BaseContract {
@@ -16,27 +16,35 @@ contract BaseContract {
         optimismContract = IOptimismContract(_optimismContractAddress);
     }
 
-    // Function to receive cross-chain packet from Optimism
-    function receivePacket(bytes calldata data) external {
+    // Function to receive universal packet from Optimism
+    function onRecvUniversalPacket(bytes calldata data) external {
         // Decode the packet
         (address recipient, uint256 amount) = abi.decode(data, (address, uint256));
 
         // Perform any necessary operations with the received data
-        // For example, mint NFT on Optimism
-        optimismContract.mintNFT(recipient);
+        // For example, mint NFT on Base
+        mintNFT(recipient);
 
         // Emit an event indicating the packet is received
         emit PacketReceived(msg.sender, data);
 
-        // Send acknowledgment back to Optimism via Universal Channel
+        // Send acknowledgment back to Optimism
         sendAcknowledgment();
+    }
+
+    // Function to mint NFT on Base
+    function mintNFT(address recipient) internal {
+        // Implementation details for minting NFT on Base
+        // This function is not provided here
     }
 
     // Function to send acknowledgment back to Optimism
     function sendAcknowledgment() internal {
-        // Perform sending acknowledgment via Universal Channel
-        // Implementation details for Universal Channels are not provided here
-        // It could be something like:
-        // universalChannel.sendAcknowledgment();
+        // Construct acknowledgment packet
+        bytes memory acknowledgment = abi.encodeWithSignature("onUniversalPacketAcknowledgement()");
+
+        // Send acknowledgment back to Optimism
+        optimismContract.sendUniversalPacket(acknowledgment);
     }
 }
+
